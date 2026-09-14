@@ -265,7 +265,7 @@ fn set_mute(muted: bool) -> Result<()> {
 #[cfg(windows)]
 fn with_endpoint_volume<F>(f: F) -> Result<()>
 where
-    F: FnOnce(&windows::Win32::Media::Audio::IAudioEndpointVolume) -> windows::core::Result<()>,
+    F: FnOnce(&windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume) -> windows::core::Result<()>,
 {
     use windows::Win32::Media::Audio::{
         eConsole, eRender, IMMDeviceEnumerator, MMDeviceEnumerator,
@@ -280,7 +280,7 @@ where
         let r = (|| -> Result<()> {
             let enumerator: IMMDeviceEnumerator = CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
             let device = enumerator.GetDefaultAudioEndpoint(eRender, eConsole)?;
-            let endpoint = device.Activate::<windows::Win32::Media::Audio::IAudioEndpointVolume>(CLSCTX_ALL, None)?;
+            let endpoint = device.Activate::<windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume>(CLSCTX_ALL, None)?;
             f(&endpoint)?;
             Ok(())
         })();
@@ -336,7 +336,7 @@ fn set_do_not_disturb(on: bool) -> Result<()> {
         use windows::Win32::UI::WindowsAndMessaging::{
             SendNotifyMessageW, HWND_BROADCAST, WM_SETTINGCHANGE,
         };
-        let _ = SendNotifyMessageW(HWND_BROADCAST, WM_SETTINGCHANGE, Some(WPARAM(0)), LPARAM(0));
+        let _ = SendNotifyMessageW(HWND_BROADCAST, WM_SETTINGCHANGE, WPARAM(0), LPARAM(0));
     }
     Ok(())
 }

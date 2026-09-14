@@ -85,8 +85,9 @@ impl TextSaver {
     }
 
     async fn poll_once(&self) -> Result<()> {
-        // UIA is COM and blocking — run it on the blocking thread pool.
-        let captured = tokio::task::spawn_blocking(capture_focused_text).await?;
+        // UIA is COM and blocking — run it on the blocking thread pool;
+        // `??` unwraps both the JoinError and the inner anyhow::Result.
+        let captured = tokio::task::spawn_blocking(capture_focused_text).await??;
 
         // Purge hourly even when nothing changed, so old secrets don't linger.
         self.db.text_purge(RETENTION_SECS).ok();
@@ -165,6 +166,7 @@ impl TextSaver {
 #[cfg(windows)]
 fn capture_focused_text() -> Result<Option<FocusedText>> {
     use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
+    use windows::Win32::System::Variant::VT_BOOL;
     use windows::Win32::UI::Accessibility::{
         CUIAutomation, IUIAutomation, IUIAutomationValuePattern, UIA_IsPasswordPropertyId,
         UIA_ValuePatternId,
@@ -172,7 +174,6 @@ fn capture_focused_text() -> Result<Option<FocusedText>> {
     use windows::Win32::UI::WindowsAndMessaging::{
         GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId,
     };
-    use windows::core::ComInterface;
 
     // UIA requires an initialized COM apartment on this thread.
     unsafe {
@@ -187,11 +188,15 @@ fn capture_focused_text() -> Result<Option<FocusedText>> {
                 windows::Win32::System::Com::CoCreateInstance(&CUIAutomation, None, windows::Win32::System::Com::CLSCTX_INPROC_SERVER)?;
             let element = automation.GetFocusedElement()?;
 
-            // Skip password controls unconditionally.
-            let is_password: bool = element
-                .GetCurrentPropertyValue(UIA_IsPasswordPropertyId)?
-                .TryInto()
-                .unwrap_or(false);
+            // Skip password controls unconditionally (privacy: never capture them).
+            let variant = element
+                .GetCurrentPropertyValue(UIA_IsPasswordPropertyId)
+                .unwrap_or_default();
+            let is_password = {
+                let inner = variant.Anonymous.Anonymous;
+                inner.vt == VT_BOOL
+                    && variant.Anonymous.Anonymous.Anonymous.boolVal.as_bool()
+            };
             if is_password {
                 return Ok(None);
             }

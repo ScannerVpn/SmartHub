@@ -224,8 +224,10 @@ impl AiEngine {
             for (_, dups) in by_hash {
                 // Keep the first, suggest removing the rest.
                 for dup in dups.iter().skip(1) {
-                    let (p, s, _) = entries_meta.iter().find(|(ep, _, _)| ep == *dup).cloned().unwrap_or_else(||
-                        (dup.clone(), *size, 0));
+                    let (p, s, _) = match entries_meta.iter().find(|(ep, _, _)| ep == *dup) {
+                        Some(t) => t.clone(),
+                        None => ((*dup).clone(), *size, 0),
+                    };
                     suggestions.push(DeclutterSuggestion {
                         id: next_id(),
                         path: p.display().to_string(),
