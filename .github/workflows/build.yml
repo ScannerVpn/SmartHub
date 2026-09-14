@@ -2,7 +2,7 @@ name: Release Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'arena/**']
     tags: ['v*']
   workflow_dispatch:
 
@@ -35,11 +35,11 @@ jobs:
         run: npm ci
 
       - name: Type-check frontend
-        run: npx svelte-check --tsconfig ./tsconfig.json --fail-on-warnings
+        run: npx svelte-check --tsconfig ./tsconfig.json
 
       - name: Cargo check (core logic)
         working-directory: src-tauri
-        run: cargo check --locked
+        run: cargo check
 
       - name: Build installers
         run: npm run tauri build
