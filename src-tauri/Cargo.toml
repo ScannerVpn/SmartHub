@@ -1,0 +1,87 @@
+[package]
+name = "smarthub"
+version = "0.1.0"
+description = "SmartHub — your second OS for repetitive work"
+authors = ["SmartHub"]
+edition = "2021"
+rust-version = "1.77.2"
+license = "MIT"
+
+# A lib target is required so the `mobile` feature layout works and tests can
+# import the core; the binary just calls into it.
+[lib]
+name = "smarthub_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# --- Tauri runtime ----------------------------------------------------------
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-global-shortcut = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# --- Async runtime ----------------------------------------------------------
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "fs", "sync"] }
+
+# --- Persistence ------------------------------------------------------------
+# SQLite (bundled => no system dependency) for clipboard history, settings,
+# and license state. All on-device, per the privacy guarantees.
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# --- System integration -----------------------------------------------------
+arboard = "3"            # cross-platform clipboard read/write
+sha2 = "0.10"            # dedup hashing for clipboard content
+blake3 = "1"             # fast content hashing for the declutterer
+parking_lot = "0.12"
+thiserror = "2"
+anyhow = "1"
+uuid = { version = "1", features = ["v4"] }
+time = { version = "0.3", features = ["serde"] }
+walkdir = "2"
+once_cell = "1"
+
+# --- Licensing --------------------------------------------------------------
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+keyring = { version = "3", features = ["windows-native", "apple-native", "linux-native-sync-persistent"] }
+
+# --- Encryption at rest -----------------------------------------------------
+# AES-256-GCM; the 256-bit data key lives in the OS credential store
+# (Windows Credential Manager / macOS Keychain), never on disk.
+aes-gcm = "0.10"
+rand = "0.8"
+base64 = "0.22"
+
+# --- Windows-only integrations ---------------------------------------------
+[target.'cfg(windows)'.dependencies]
+# windows-rs: foreground/window info, audio endpoint control (IAudioEndpointVolume),
+# wallpaper (SystemParametersInfoW) and UI Automation for text capture.
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_Media_Audio",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Accessibility"
+] }
+
+# --- Optional on-device AI ---------------------------------------------------
+# Disabled by default to keep the binary < 15 MB. Build with
+# `--features local-ai` to enable llama.cpp-backed inference for the
+# AI File Declutterer's content-based classification.
+[features]
+default = []
+local-ai = ["dep:llama-cpp-2"]
+
+[dependencies.llama-cpp-2]
+version = "0.1"
+optional = true
+
+[profile.release]
+# Size & startup targets from the PRD (< 15 MB installer, < 80 MB idle RAM)
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

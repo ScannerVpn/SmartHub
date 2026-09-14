@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SmartHub",
+  "version": "0.1.0",
+  "identifier": "app.smarthub.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "SmartHub",
+        "width": 760,
+        "height": 560,
+        "minWidth": 620,
+        "minHeight": 400,
+        "resizable": true,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "center": true,
+        "focus": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src ipc: http://ipc.localhost https://licensing.smarthub.app"
+    },
+    "trayIcon": {
+      "iconPath": "icons/32x32.png",
+      "iconAsTemplate": false,
+      "tooltip": "SmartHub — Alt+Space"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "nsis": {
+      "displayLanguageSelector": false,
+      "languages": ["English"]
+    },
+    "category": "Productivity",
+    "shortDescription": "Your second OS for repetitive work",
+    "longDescription": "SmartHub is a lightweight productivity hub: smart clipboard, text recovery, workspace modes, and an on-device AI declutterer — all behind one global hotkey."
+  }
+}

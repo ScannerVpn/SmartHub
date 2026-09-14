@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output (frontend)
+dist/
+
+# Rust / Tauri build output
+src-tauri/target/
+src-tauri/gen/
+
+# Local AI models (downloaded on demand, never committed)
+assets/models/
+*.gguf
+
+# Local data / dev databases
+*.sqlite
+*.sqlite-journal
+*.db-wal
+*.db-shm
+
+# Cloudflare Workers
+server/workers/.wrangler/
+server/workers/node_modules/
+.dev.vars
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+!*.vscode/extensions.json
+
+# Secrets — never commit real license keys or webhook secrets
+*.pem
+.secure-vault

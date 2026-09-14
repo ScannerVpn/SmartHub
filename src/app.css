@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-transparent text-ink font-sans antialiased overflow-hidden;
+    /* The window itself is transparent (Tauri); the palette provides the surface.
+       In the browser preview, App.svelte adds a simulated desktop backdrop. */
+  }
+
+  ::selection {
+    background: rgba(99, 102, 241, 0.35);
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* Glass surface used by the command palette and cards */
+  .glass {
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.55),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .kbd {
+    @apply inline-flex items-center gap-1 rounded-md border border-stroke bg-white/5 px-1.5 py-0.5
+      font-mono text-[11px] text-muted;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-stroke bg-white/5 px-2 py-0.5
+      text-[11px] text-muted;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3.5 py-2 text-body
+      font-medium text-white transition-colors duration-100 hover:bg-accent-2
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 disabled:opacity-40
+      disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-stroke bg-white/5
+      px-3.5 py-2 text-body text-ink transition-colors duration-100 hover:bg-white/10
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-stroke bg-white/5 px-3.5 py-2.5 text-body text-ink
+      placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-accent/50
+      focus:border-accent/40 transition;
+  }
+}

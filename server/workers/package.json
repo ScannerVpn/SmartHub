@@ -1,0 +1,17 @@
+{
+  "name": "smarthub-licensing",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "db:migrate": "wrangler d1 execute smarthub-licenses --file=./schema.sql"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250422.0",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.14.0"
+  }
+}

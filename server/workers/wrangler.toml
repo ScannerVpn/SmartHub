@@ -1,0 +1,32 @@
+name = "smarthub-licensing"
+main = "src/index.ts"
+compatibility_date = "2025-04-22"
+
+# ---------------------------------------------------------------------------
+# Deploy:
+#   npm i && npm run db:migrate && npm run deploy
+#
+# Secrets (never commit):
+#   npx wrangler secret put WEBHOOK_SECRET   # Lemon Squeezy signing secret
+# ---------------------------------------------------------------------------
+
+# D1 — activation records + webhook event log (free tier is generous for licenses)
+# Create once: `npx wrangler d1 create smarthub-licenses`, paste the id here.
+[[d1_databases]]
+binding = "DB"
+database_name = "smarthub-licenses"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# KV — short-lived cache of validation results (keeps LS rate limits happy)
+# Create once: `npx wrangler kv namespace create VALIDATION_CACHE`, paste the id here.
+[[kv_namespaces]]
+binding = "VALIDATION_CACHE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Custom domain (optional but recommended — match API_BASE in the desktop app)
+# routes = [
+#   { pattern = "licensing.smarthub.app/*", zone_name = "smarthub.app" }
+# ]
+
+[observability]
+enabled = true
