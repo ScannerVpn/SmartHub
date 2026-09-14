@@ -30,11 +30,6 @@
     ],
     "security": {
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src ipc: http://ipc.localhost https://licensing.smarthub.app"
-    },
-    "trayIcon": {
-      "iconPath": "icons/32x32.png",
-      "iconAsTemplate": false,
-      "tooltip": "SmartHub — Alt+Space"
     }
   },
   "bundle": {

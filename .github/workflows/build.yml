@@ -9,6 +9,10 @@ on:
 env:
   CI: true
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -39,12 +43,17 @@ jobs:
 
       - name: Cargo check (core logic)
         working-directory: src-tauri
-        run: cargo check
+        run: |
+          cargo check --message-format=short 2>&1 | Tee-Object -FilePath ../ci-cargo.log
+          exit $LASTEXITCODE
 
       - name: Build installers
-        run: npm run tauri build
+        run: |
+          npm run tauri build 2>&1 | Tee-Object -FilePath ci-bundle.log
+          exit $LASTEXITCODE
 
       - name: Upload artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: smarthub-windows-${{ github.sha }}
@@ -52,3 +61,18 @@ jobs:
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
           if-no-files-found: ignore
+
+      # Sandbox-readable diagnostics: CI logs live on blob storage that the
+      # agent's network can't reach, so post the tail as an issue comment.
+      - name: Post failure diagnostics
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $body = "## CI failure diagnostics (run ${{ github.run_id }}, ${{ github.sha }})`n`n"
+          foreach ($f in @("ci-cargo.log", "ci-bundle.log")) {
+            if (Test-Path $f) {
+              $body += "### $f (tail)`n``````text`n" + (Get-Content $f -Tail 150 | Out-String) + "`n```````n`n"
+            }
+          }
+          $body | gh issue create --repo ${{ github.repository }} --title "[ci-diag] build failure ${{ github.run_number }}" --body-file - | Out-Null

@@ -12,15 +12,14 @@ pub mod licensing;
 
 use std::sync::Arc;
 
-use anyhow::Result;
-use core::ai_engine::{AiEngine, AiStatus, ScanResultDto};
-use core::clipboard::{ClipboardItemDto, ClipboardService};
-use core::crypto::Crypto;
-use core::db::{AppSettings, Db};
-use core::hotkey;
-use core::text_saver::{RecoveryEntryDto, TextSaver};
-use core::workspace::{ProfilesDto, WorkspaceProfile, WorkspaceService};
-use licensing::{LicenseInfo, Tier};
+use crate::core::ai_engine::{AiEngine, AiStatus, ScanResultDto};
+use crate::core::clipboard::{ClipboardItemDto, ClipboardService};
+use crate::core::crypto::Crypto;
+use crate::core::db::{AppSettings, Db};
+use crate::core::hotkey;
+use crate::core::text_saver::{RecoveryEntryDto, TextSaver};
+use crate::core::workspace::{ProfilesDto, WorkspaceProfile, WorkspaceService};
+use crate::licensing::{LicenseInfo, Tier};
 use parking_lot::RwLock;
 use tauri::{AppHandle, Manager, State, WindowEvent};
 
@@ -333,10 +332,17 @@ fn build_tray(app: &mut tauri::App) -> Result<(), tauri::Error> {
     let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
     let menu = MenuBuilder::new(app).items(&[&show, &quit]).build()?;
 
-    TrayIconBuilder::with_id("main")
+    let icon = app.default_window_icon().cloned();
+
+    let mut builder = TrayIconBuilder::with_id("main")
         .menu(&menu)
-        .show_menu_on_left_click(false)
-        .on_menu_event(|app, event| match event.id().as_ref() {
+        .show_menu_on_left_click(false);
+    if let Some(icon) = icon {
+        builder = builder.icon(icon);
+    }
+
+    builder
+        .on_menu_event(|app, event| match event.id.as_ref() {
             "show" => core::hotkey::toggle_palette(app),
             "quit" => app.exit(0),
             _ => {}
