@@ -42,9 +42,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "nsis": {
-      "displayLanguageSelector": false,
-      "languages": ["English"]
+    "windows": {
+      "nsis": {
+        "displayLanguageSelector": false,
+        "languages": ["English"]
+      }
     },
     "category": "Productivity",
     "shortDescription": "Your second OS for repetitive work",
