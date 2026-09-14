@@ -166,7 +166,6 @@ impl TextSaver {
 #[cfg(windows)]
 fn capture_focused_text() -> Result<Option<FocusedText>> {
     use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
-    use windows::Win32::System::Variant::VT_BOOL;
     use windows::Win32::UI::Accessibility::{
         CUIAutomation, IUIAutomation, IUIAutomationValuePattern, UIA_IsPasswordPropertyId,
         UIA_ValuePatternId,
@@ -189,14 +188,11 @@ fn capture_focused_text() -> Result<Option<FocusedText>> {
             let element = automation.GetFocusedElement()?;
 
             // Skip password controls unconditionally (privacy: never capture them).
+            // windows-core 0.58 VARIANT exposes typed TryFrom conversions.
             let variant = element
                 .GetCurrentPropertyValue(UIA_IsPasswordPropertyId)
                 .unwrap_or_default();
-            let is_password = {
-                let inner = variant.Anonymous.Anonymous;
-                inner.vt == VT_BOOL
-                    && variant.Anonymous.Anonymous.Anonymous.boolVal.as_bool()
-            };
+            let is_password = bool::try_from(&variant).unwrap_or(false);
             if is_password {
                 return Ok(None);
             }
